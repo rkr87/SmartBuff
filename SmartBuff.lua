@@ -41,7 +41,7 @@ GameTooltip:SetUnitDebuff("unit", [index] or ["name", "rank"][, "filter"]);
 ]]--
 
 
-SMARTBUFF_VERSION       = "v3.3e";
+SMARTBUFF_VERSION       = "v3.3e-bags.2";
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in cast buffs";
 SMARTBUFF_DESC          = "Cast the most important buffs on you or party/raid members/pets";
@@ -58,7 +58,9 @@ local GlobalCd = 1.6;
 local maxSkipCoolDown = 3;
 local maxRaid = 40;
 local maxBuffs = 36;
-local maxCheckButtons = 50;
+local buffPageSize = 28; -- number of physical checkbox pairs in SmartBuff.xml
+local buffPage = 1;
+local bagItems = SMARTBUFF_BagItems;
 local numBuffs = 0;
 
 
@@ -232,7 +234,9 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("PLAYER_TALENT_UPDATE");  
   
   self:RegisterEvent("LEARNED_SPELL_IN_TAB");
+  self:RegisterEvent("SPELLS_CHANGED");
   self:RegisterEvent("ACTIONBAR_HIDEGRID");
+  self:RegisterEvent("BAG_UPDATE");
   
   self:RegisterEvent("UNIT_AURA");
   --self:RegisterEvent("CHAT_MSG_ADDON");
@@ -299,6 +303,14 @@ function SMARTBUFF_OnEvent(self, event, arg1, arg2, arg3, arg4, arg5)
     return;
   end;
   
+  if event == "BAG_UPDATE" then
+    local bag = tonumber(arg1);
+    if bag and bag >= 0 and bag <= NUM_BAG_FRAMES then bagItems.MarkDirty(); end
+    return;
+  elseif event == "PLAYER_ENTERING_WORLD" then
+    bagItems.MarkDirty();
+  end
+
   if (event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE") then
     isSetUnits = true;
     
@@ -356,7 +368,7 @@ function SMARTBUFF_OnEvent(self, event, arg1, arg2, arg3, arg4, arg5)
       isSetBuffs = true;
     end
     
-  elseif (event == "LEARNED_SPELL_IN_TAB" or event == "ACTIONBAR_HIDEGRID") then
+  elseif (event == "LEARNED_SPELL_IN_TAB" or event == "SPELLS_CHANGED" or event == "ACTIONBAR_HIDEGRID") then
     isSetBuffs = true;
   end
 
@@ -543,6 +555,10 @@ end
 function SMARTBUFF_Ticker(force)
   if (force or GetTime() > tTicker + 1) then
     tTicker = GetTime();
+    if (bagItems.ScanDue(tTicker) and bagItems.Scan()) or isSetBuffs then
+      SMARTBUFF_SetBuffs(true);
+      isSyncReq = true;
+    end
        
     if (isSetUnits) then
       isSetUnits = false;
@@ -889,7 +905,7 @@ end
 
 
 -- Set the buff array
-function SMARTBUFF_SetBuffs()
+function SMARTBUFF_SetBuffs(bagsCurrent)
   --if (not O.Toggle) then return; end
   
   local n = 1;
@@ -913,8 +929,9 @@ function SMARTBUFF_SetBuffs()
     B[CS()][ct].GrpBuffSize = 4;
   end  
   
-  cBuffs = nil;
+  local edited = cBuffs[iLastBuffSetup] and cBuffs[iLastBuffSetup].BuffS;
   cBuffs = { };
+  SMARTBUFF_cBuffs = cBuffs;
   cBuffIndex = { };
   numBuffs = 0;
   
@@ -942,19 +959,30 @@ function SMARTBUFF_SetBuffs()
     n = SMARTBUFF_SetBuff(buff, n);
   end
   
-  for _, buff in ipairs(SMARTBUFF_POTION) do
-    n = SMARTBUFF_SetBuff(buff, n);
-  end  
+  n = bagItems.AddKnownStones(n);
+  if not bagsCurrent then bagItems.Scan(); end
+  for _, item in ipairs(bagItems.list) do
+    n = SMARTBUFF_SetBuff(item, n);
+  end
         
   cBuffsCombat = { };  
   SMARTBUFF_SetInCombatBuffs();
   
   numBuffs = n - 1;
   isSetBuffs = false;
+  -- An acquisition/removal can move the row under the open per-buff editor.
+  if iLastBuffSetup > 0 and (not cBuffs[iLastBuffSetup] or cBuffs[iLastBuffSetup].BuffS ~= edited) then
+    iLastBuffSetup = -1;
+    SmartBuff_BuffSetup:Hide();
+    SmartBuff_PlayerSetup:Hide();
+  end
+  if SmartBuffOptionsFrame:IsVisible() and SmartBuffOptionsFrame:GetHeight() > 200 then
+    SMARTBUFF_RenderBuffRows();
+  end
 end
 
 function SMARTBUFF_SetBuff(buff, i)
-  if (buff == nil or buff[1] == nil or i > maxCheckButtons) then return i; end  
+  if (buff == nil or buff[1] == nil) then return i; end
   
   cBuffs[i] = nil;
   cBuffs[i] = { };
@@ -962,13 +990,21 @@ function SMARTBUFF_SetBuff(buff, i)
   cBuffs[i].DurationS = ceil(buff[2] * 60);
   cBuffs[i].Type = buff[3];
   cBuffs[i].CanCharge = false;
-  cBuffs[i].IDS = SMARTBUFF_GetSpellID(cBuffs[i].BuffS);
-  if (cBuffs[i].IDS == nil and not (SMARTBUFF_IsItem(cBuffs[i].Type))) then
+  if buff.id or buff.stone then
+    -- Supplies use actual aura/enchant/stock, never the core spell timer.
+    cBuffs[i].Supply = buff;
+    cBuffs[i].DisplayName = buff.name;
+  else
+    cBuffs[i].IDS = SMARTBUFF_GetSpellID(cBuffs[i].BuffS);
+  end
+  if (cBuffs[i].IDS == nil and not cBuffs[i].Supply and not SMARTBUFF_IsItem(cBuffs[i].Type)) then
     cBuffs[i] = nil;
     return i;
   end
   
-  if (cBuffs[i].IDS) then
+  if cBuffs[i].Supply then
+    cBuffs[i].IconS = buff.icon;
+  elseif (cBuffs[i].IDS) then
     cBuffs[i].IconS = GetSpellTexture(cBuffs[i].IDS, SMARTBUFF_BOOK_TYPE_SPELL);
   else
     local bag, slot, count, texture = SMARTBUFF_FindReagent(cBuffs[i].BuffS);
@@ -986,6 +1022,11 @@ function SMARTBUFF_SetBuff(buff, i)
   
   local ct = currentTemplate;  
   local name = cBuffs[i].BuffS;
+  local saved = B[CS()][ct];
+  if buff.legacy and not saved[name] and saved[buff.name] then
+    -- One-time migration for the original elixirs/flasks.
+    saved[name], saved[buff.name] = saved[buff.name], nil;
+  end
   if (B[CS()][ct][name] == nil) then
     B[CS()][ct][name] = { };
     B[CS()][ct][name].EnableS = false;
@@ -994,7 +1035,7 @@ function SMARTBUFF_SetBuff(buff, i)
     B[CS()][ct][name].SelfNot = false;
     B[CS()][ct][name].CIn = false;
     B[CS()][ct][name].COut = true;
-    B[CS()][ct][name].MH = false;
+    B[CS()][ct][name].MH = buff.stone ~= nil and buff[3] == SMARTBUFF_CONST_WEAPON;
     B[CS()][ct][name].OH = false;
     B[CS()][ct][name].Reminder = true;
     B[CS()][ct][name].RBTime = 0;
@@ -1073,7 +1114,8 @@ function SMARTBUFF_SetInCombatBuffs()
   end
   for name, data in pairs(B[CS()][ct]) do
     --SMARTBUFF_AddMsgD(name .. ", type = " .. type(data));
-    if (type(data) == "table" and cBuffIndex[name] and (B[CS()][ct][name].EnableS or B[CS()][ct][name].EnableG) and B[CS()][ct][name].CIn) then
+    if (type(data) == "table" and cBuffIndex[name] and not cBuffs[cBuffIndex[name]].Supply
+      and (B[CS()][ct][name].EnableS or B[CS()][ct][name].EnableG) and B[CS()][ct][name].CIn) then
       cBuffsCombat[name] = { };
       cBuffsCombat[name].Unit = "player";
       cBuffsCombat[name].Type = cBuffs[cBuffIndex[name]].Type;
@@ -1526,13 +1568,13 @@ function SMARTBUFF_Check(mode, force)
     
   -- buff target first, if enabled
   if ((mode == 0 or mode == 5) and O.BuffTarget) then
-    local actionType, spellName, slot, buffType;
-    i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit("target", 0, mode);
+    local actionType, spellName, slot, actionUnit, buffType;
+    i, actionType, spellName, slot, actionUnit, buffType = SMARTBUFF_BuffUnit("target", 0, mode);
     if (i <= 1) then
       if (i == 0) then
         --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
       end
-      return i, actionType, spellName, slot, "target", buffType;
+      return i, actionType, spellName, slot, actionUnit or "target", buffType;
     end    
   end
 
@@ -1775,8 +1817,8 @@ function SMARTBUFF_Check(mode, force)
       if (units) then
         for _, unit in pairs(units) do
           --SMARTBUFF_AddMsgD("Checking single units " .. unit);
-          local spellName, actionType, slot, buffType;
-          i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit(unit, subgroup, mode);
+          local spellName, actionType, slot, actionUnit, buffType;
+          i, actionType, spellName, slot, actionUnit, buffType = SMARTBUFF_BuffUnit(unit, subgroup, mode);
           if (i <= 1) then
             if (i == 0 and mode ~= 1) then
               --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
@@ -1784,7 +1826,7 @@ function SMARTBUFF_Check(mode, force)
                 --tLastCheck = tLastCheck + 2;
               end
             end
-            return i, actionType, spellName, slot, unit, buffType;
+            return i, actionType, spellName, slot, actionUnit or unit, buffType;
           end
         end
       end
@@ -1856,15 +1898,23 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
     isShapeshifted, sShapename = SMARTBUFF_IsShapeshifted();
     while (cBuffs[i] and cBuffs[i].BuffS) do
       buffnS = cBuffs[i].BuffS;
-	  bs = GetBuffSettings(buffnS);
+      bs = GetBuffSettings(buffnS);
+      local item = cBuffs[i].Supply;
       bExpire = false;
       bExpireOh = false;
       handtype = "";
       charges = -1;
       bufftarget = nil;
-      bUsable = bs.EnableS;
-      
-	  if (not bs) then bUsable = false end
+      bUsable = bs and bs.EnableS;
+      if bUsable and item then
+        -- Soulstone goes through the same group/class/add/ignore filters as
+        -- every other group-capable buff below. All other supplies are personal.
+        if cBuffs[i].Type == SMARTBUFF_CONST_GROUP then
+          bUsable = UnitIsPlayer(unit) and UnitCanAssist("player", unit);
+        else
+          bUsable = SMARTBUFF_IsPlayer(unit);
+        end
+      end
       
 	  if (bUsable and spell and spell ~= buffnS) then
         bUsable = false;
@@ -1903,7 +1953,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
         end
       end      
       
-      if (bUsable and not (SMARTBUFF_IsItem(cBuffs[i].Type))) then
+      if (bUsable and not item and not SMARTBUFF_IsItem(cBuffs[i].Type)) then
         -- check if you have enough mana/rage/energy to cast
         local isUsable, notEnoughMana = IsUsableSpell(buffnS);
         if (notEnoughMana) then
@@ -1915,7 +1965,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
         end
       end      
       
-      if (bUsable and bs.EnableS and (cBuffs[i].IDS ~= nil or SMARTBUFF_IsItem(cBuffs[i].Type))
+      if (bUsable and bs.EnableS and (item or cBuffs[i].IDS ~= nil or SMARTBUFF_IsItem(cBuffs[i].Type))
         and ((mode ~= 1 and ((isCombat and bs.CIn) or (not isCombat and bs.COut)))
           or (mode == 1 and bs.Reminder and ((not isCombat and bs.COut) 
           or (isCombat and (bs.CIn or O.ToggleAutoCombat)))))) then
@@ -2005,9 +2055,13 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
             if (test) then
               buff = nil;
-                            
+              local actionType, actionName, itemSlot, itemUnit;
+              if item then
+                actionType, actionName, itemSlot, itemUnit, bt, buff = bagItems.Action(item, bs, unit, rbTime, time, mode == 1);
+                if actionType then bufftarget, bExpire = un, bt ~= nil; end
+
               -- Tracking ability ------------------------------------------------------------------------
-              if (cBuffs[i].Type == SMARTBUFF_CONST_TRACK) then
+              elseif (cBuffs[i].Type == SMARTBUFF_CONST_TRACK) then
                 
                 local iconTrack = GetTrackingTexture();
                 if (iconTrack ~= "Interface\\Minimap\\Tracking\\None") then
@@ -2232,8 +2286,11 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   currentUnit = nil;
                   currentSpell = nil;
                   
+                  if item then
+                    sMsgWarning = "";
+                    return 0, actionType, actionName, itemSlot, itemUnit, cBuffs[i].Type;
                   --try to apply weapon buffs on main/off hand
-                  if (cBuffs[i].Type == SMARTBUFF_CONST_INV) then
+                  elseif (cBuffs[i].Type == SMARTBUFF_CONST_INV) then
                     local bag, slot, count, _ = SMARTBUFF_FindReagent(buffnS);
                     if (count > 0 and (handtype == "main" or bExpire)) then
                       sMsgWarning = "";
@@ -2279,7 +2336,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   currentSpell = nil;
                   if (bufftarget == nil) then bufftarget = un; end
                   
-                  if (SMARTBUFF_CheckUnitLevel(unit, cBuffs[i].IDS, cBuffs[i].LevelsS) ~= nil or SMARTBUFF_IsItem(cBuffs[i].Type)) then
+                  if (item or SMARTBUFF_CheckUnitLevel(unit, cBuffs[i].IDS, cBuffs[i].LevelsS) ~= nil or SMARTBUFF_IsItem(cBuffs[i].Type)) then
                     -- clean up buff timer, if expired
                     if (bt and bt < 0 and (bExpire or bExpireOh)) then 
                       bt = 0;
@@ -3099,6 +3156,7 @@ function SMARTBUFF_Options_Init(self)
   
   if (O.LastTemplate == nil) then  O.LastTemplate = SMARTBUFF_TEMPLATES[1]; end
   local b = false;
+  local i = 1; -- restore the saved template rather than depending on a global loop index
   while (SMARTBUFF_TEMPLATES[i] ~= nil) do
     if (SMARTBUFF_TEMPLATES[i] == O.LastTemplate) then
       b = true;
@@ -3489,8 +3547,14 @@ function SMARTBUFF_OSelfFirst()
   B[CS()][currentTemplate].SelfFirst = not B[CS()][currentTemplate].SelfFirst;
 end
 
-function SMARTBUFF_OToggleBuff(s, i)
-  local name = cBuffs[i].BuffS;  
+local function buffRowIndex(row)
+  return (buffPage - 1) * buffPageSize + row;
+end
+
+function SMARTBUFF_OToggleBuff(s, row)
+  local i = buffRowIndex(row);
+  if not cBuffs[i] then return; end
+  local name = cBuffs[i].BuffS;
   if (name == nil) then
     return;
   end
@@ -3498,7 +3562,7 @@ function SMARTBUFF_OToggleBuff(s, i)
   if (s == "S") then
     B[CS()][currentTemplate][name].EnableS = not B[CS()][currentTemplate][name].EnableS;
     if (B[CS()][currentTemplate][name].EnableS) then
-      SmartBuff_BuffSetup_Show(i);
+      SmartBuff_BuffSetup_Show(row);
     else
       SmartBuff_BuffSetup:Hide();
       iLastBuffSetup = -1;
@@ -3539,7 +3603,9 @@ function SMARTBUFF_OptionsFrame_Open(force)
   end
 end
 
-function SmartBuff_BuffSetup_Show(i)
+function SmartBuff_BuffSetup_Show(row)
+  local i = buffRowIndex(row);
+  if not cBuffs[i] then return; end
   local icon1 = cBuffs[i].IconS;
   local icon2 = cBuffs[i].IconG;
   local name = cBuffs[i].BuffS;
@@ -3586,7 +3652,7 @@ function SmartBuff_BuffSetup_Show(i)
     
     local obj = SmartBuff_BuffSetup_BuffText;
     if (name) then
-      obj:SetText(name);
+      obj:SetText(cBuffs[i].DisplayName or name);
       --SMARTBUFF_AddMsgD(name);
     else
       obj:SetText("");
@@ -3599,10 +3665,10 @@ function SmartBuff_BuffSetup_Show(i)
     SmartBuff_BuffSetup_cbMH:SetChecked(B[CS()][ct][name].MH);
     SmartBuff_BuffSetup_cbOH:SetChecked(B[CS()][ct][name].OH);
     SmartBuff_BuffSetup_cbReminder:SetChecked(B[CS()][ct][name].Reminder);
+    iLastBuffSetup = i; -- SetNumber may synchronously fire OnTextChanged
     SmartBuff_BuffSetup_txtManaLimit:SetNumber(B[CS()][ct][name].ManaLimit);
        
     --SMARTBUFF_AddMsgD("Test Buff setup show 1");
-    SmartBuff_BuffSetup_RBTime:SetValue(B[CS()][ct][name].RBTime);
     if (cBuffs[i].DurationS > 0) then
       SmartBuff_BuffSetup_RBTime:SetMinMaxValues(0, cBuffs[i].DurationS);
       getglobal(SmartBuff_BuffSetup_RBTime:GetName().."High"):SetText(cBuffs[i].DurationS);
@@ -3615,9 +3681,11 @@ function SmartBuff_BuffSetup_Show(i)
       else
         SmartBuff_BuffSetup_RBTime:SetValueStep(30);
       end
+      SmartBuff_BuffSetup_RBTime:SetValue(B[CS()][ct][name].RBTime);
       getglobal(SmartBuff_BuffSetup_RBTime:GetName().."Text"):SetText(B[CS()][ct][name].RBTime .. "\nsec");
       SmartBuff_BuffSetup_RBTime:Show();
     else
+      SmartBuff_BuffSetup_RBTime:SetValue(B[CS()][ct][name].RBTime);
       SmartBuff_BuffSetup_RBTime:Hide();
     end
     --SMARTBUFF_AddMsgD("Test Buff setup show 2");
@@ -3629,7 +3697,7 @@ function SmartBuff_BuffSetup_Show(i)
     else
       SmartBuff_BuffSetup_cbMH:Hide();
       SmartBuff_BuffSetup_cbOH:Hide();
-      if (cBuffs[i].Type ~= SMARTBUFF_CONST_FOOD and cBuffs[i].Type ~= SMARTBUFF_CONST_SCROLL and cBuffs[i].Type ~= SMARTBUFF_CONST_POTION) then
+      if not SMARTBUFF_IsItem(cBuffs[i].Type) then
         SmartBuff_BuffSetup_txtManaLimit:Show();
         --SMARTBUFF_AddMsgD("Show ManaLimit");
       end
@@ -3665,7 +3733,6 @@ function SmartBuff_BuffSetup_Show(i)
         btn:Show();
       end
     end
-    iLastBuffSetup = i;
     --SMARTBUFF_AddMsgD("Test Buff setup show 4");
     SmartBuff_BuffSetup:Show();
     
@@ -3726,8 +3793,15 @@ function SmartBuff_BuffSetup_ToolTip(mode)
   local btype = cBuffs[i].Type
   
   GameTooltip:ClearLines();
-  if (SMARTBUFF_IsItem(btype)) then
-    local bag, slot, count, texture = SMARTBUFF_FindReagent(cBuffs[i].BuffS);
+  if cBuffs[i].Supply and cBuffs[i].Supply.bookSlot then
+    GameTooltip:SetSpell(cBuffs[i].Supply.bookSlot, SMARTBUFF_BOOK_TYPE_SPELL);
+  elseif (SMARTBUFF_IsItem(btype)) then
+    local bag, slot;
+    if cBuffs[i].Supply then
+      bag, slot = bagItems.FindSlot(cBuffs[i].Supply.id);
+    else
+      bag, slot = SMARTBUFF_FindReagent(cBuffs[i].BuffS);
+    end
     if (bag and slot) then
       GameTooltip:SetBagItem(bag, slot);
     end
@@ -3748,6 +3822,7 @@ function SMARTBUFF_Options_OnLoad(self)
 end
 
 function SMARTBUFF_Options_OnShow()
+  buffPage = 1;
   -- Check if the options frame is out of screen area
   local top    = GetScreenHeight() - math.abs(SmartBuffOptionsFrame:GetTop());
   local bottom = GetScreenHeight() - math.abs(SmartBuffOptionsFrame:GetBottom());
@@ -3906,10 +3981,7 @@ function SmartBuffOptionsFrameBLDuration_OnValueChanged(self)
   getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_BLDURATION.." "..O.BlacklistTimer.." sec");
 end
 
-function SMARTBUFF_SetCheckButtonBuffs(mode) 
-  local objS;
-  local objG;
-  local i = 1;
+function SMARTBUFF_SetCheckButtonBuffs(mode)
   local ct = currentTemplate;
 
   if (mode == 0) then
@@ -3952,30 +4024,57 @@ function SMARTBUFF_SetCheckButtonBuffs(mode)
     SmartBuffOptionsFrame_cbInShapeshift:Hide();
   end
   
-  while (i <= maxCheckButtons) do
-    objS = getglobal("SmartBuffOptionsFrame_cbBuffS"..i);
-    objG = getglobal("SmartBuffOptionsFrame_cbBuffG"..i);
-    if (cBuffs[i] and (cBuffs[i].IDS ~= nil or SMARTBUFF_IsItem(cBuffs[i].Type))) then
-      if (cBuffs[i].IDG ~= nil and objG ~= nil) then
-        getglobal(objS:GetName().."Text"):SetText("");
-        --getglobal(objG:GetName().."Text"):SetText(cBuffs[i].BuffS .. "\n" .. cBuffs[i].BuffG);
-        getglobal(objG:GetName().."Text"):SetText(cBuffs[i].BuffS .. " / " .. SMARTBUFF_MSG_GROUP);
-        getglobal(objG:GetName().."Text"):SetFontObject(GameFontNormalSmall);
-        
-        objG:SetChecked(B[CS()][currentTemplate][cBuffs[i].BuffS].EnableG);
+  if mode ~= 0 then SMARTBUFF_RenderBuffRows(); end
+end
+
+local function buffListWheel(self, delta)
+  local page = math.max(1, math.min(buffPage + (delta > 0 and -1 or 1), math.ceil(numBuffs / buffPageSize)));
+  if page ~= buffPage then
+    buffPage = page;
+    iLastBuffSetup = -1;
+    SmartBuff_BuffSetup:Hide();
+    SmartBuff_PlayerSetup:Hide();
+    SMARTBUFF_RenderBuffRows();
+  end
+end
+
+function SMARTBUFF_RenderBuffRows()
+  local pages = math.max(1, math.ceil(numBuffs / buffPageSize));
+  buffPage = math.min(buffPage, pages);
+  SmartBuffOptionsFrame_cbBuffS1Heading:SetText(pages > 1 and
+    (SMARTBUFF_OFT_BUFFS .. " (" .. buffPage .. "/" .. pages .. ")") or SMARTBUFF_OFT_BUFFS);
+  for row = 1, buffPageSize do
+    local entry = cBuffs[buffRowIndex(row)];
+    local objS = getglobal("SmartBuffOptionsFrame_cbBuffS" .. row);
+    local objG = getglobal("SmartBuffOptionsFrame_cbBuffG" .. row);
+    -- Reuse the original rows; no new frames, buttons or settings pane.
+    objS:EnableMouseWheel(pages > 1);
+    objG:EnableMouseWheel(pages > 1);
+    if pages > 1 then
+      objS:SetScript("OnMouseWheel", buffListWheel);
+      objG:SetScript("OnMouseWheel", buffListWheel);
+    end
+    if entry then
+      local bs = GetBuffSettings(entry.BuffS);
+      local name = entry.DisplayName or entry.BuffS;
+      local text = getglobal(objS:GetName() .. "Text");
+      if entry.IDG then
+        text:SetText("");
+        text = getglobal(objG:GetName() .. "Text");
+        text:SetText(name .. " / " .. SMARTBUFF_MSG_GROUP);
+        objG:SetChecked(bs.EnableG);
         objG:Show();
       else
-        if (objG) then objG:Hide(); end
-        getglobal(objS:GetName().."Text"):SetText(cBuffs[i].BuffS);
-        getglobal(objS:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+        objG:Hide();
+        text:SetText(name);
       end
-      objS:SetChecked(B[CS()][currentTemplate][cBuffs[i].BuffS].EnableS);
+      text:SetFontObject(GameFontNormalSmall);
+      objS:SetChecked(bs.EnableS);
       objS:Show();
     else
-      if (objS) then objS:Hide(); end
-      if (objG) then objG:Hide(); end
+      objS:Hide();
+      objG:Hide();
     end
-    i = i + 1;
   end
 end
 
@@ -4352,6 +4451,7 @@ function SMARTBUFF_OnPreClick(self, button, down)
         --end
         self:SetAttribute("item", spellName);
         if (slot > 0) then
+          self:SetAttribute("unit", nil); -- target the equipped item, not a unit
           self:SetAttribute("target-slot", slot);
         end
       elseif (actionType == "action" and slot) then

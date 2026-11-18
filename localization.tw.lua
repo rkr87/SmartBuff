@@ -5,9 +5,8 @@ if (GetLocale() == "zhTW") then
 
 -- Whats new info
 SMARTBUFF_WHATSNEW = "|cffffffff更新說明:|r\n\n"
-  .."- 新增支援Parrot插件, 警告訊息將轉由Parrot提供\n\n"
-  .."- 新增buffs: 法師 (達拉然智力/光輝), 牧師 (漂浮術)\n\n"
-  .."- 更新施法材料清單\n\n"
+  .."- 藥劑和精煉藥劑依背包內容顯示；術士的石頭則依已學會的製造法術顯示。\n\n"
+  .."- 清單過長時，將游標移到勾選框上，滾動滑鼠滾輪即可換頁。\n\n"
   ;
 
 

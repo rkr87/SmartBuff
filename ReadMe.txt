@@ -1,5 +1,9 @@
 Backported by Areasis for 3.3.5
 
+Bag-buff extension (3.3e-bags.2): open /sbm to select carried elixirs/flasks
+and learned Create stone spells. Soulstone uses the normal recipient controls;
+Healthstone is created but never used. See Bag-buffs.md for setup and testing.
+
 ***********************************************************************
 SmartBuff
 Created by Aeldra (EU-Proudmoore)

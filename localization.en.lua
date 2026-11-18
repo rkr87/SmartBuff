@@ -4,8 +4,8 @@
 
 -- Whats new info
 SMARTBUFF_WHATSNEW = "|cffffffffWhats new:|r\n\n"
-  .."- Updated linked buffs detection\n\n"
-  .."- Fixed minimap button LUA error, if SmartBuff is toggled before it is initialized\n\n"
+  .."- Elixir and flask options follow your bags. Stone options follow your known Create spells.\n\n"
+  .."- For longer buff lists, scroll over a buff checkbox to change page.\n\n"
   ;
 
 

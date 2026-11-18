@@ -56,20 +56,6 @@ function SMARTBUFF_InitItemList()
   SMARTBUFF_WIZARDOIL4          = GetItemInfo(20749); --"Brilliant Wizard Oil"
   SMARTBUFF_WIZARDOIL5          = GetItemInfo(22522); --"Superior Wizard Oil"
   SMARTBUFF_WIZARDOIL6          = GetItemInfo(36900); --"Exceptional Wizard Oil"
-  SMARTBUFF_SPELLSTONE1         = GetItemInfo(41191); --"Spellstone"
-  SMARTBUFF_SPELLSTONE2         = GetItemInfo(41192); --"Greater Spellstone"
-  SMARTBUFF_SPELLSTONE3         = GetItemInfo(41193); --"Major Spellstone"
-  SMARTBUFF_SPELLSTONE4         = GetItemInfo(41194); --"Master Spellstone"
-  SMARTBUFF_SPELLSTONE5         = GetItemInfo(41195); --"Demonic Spellstone"
-  SMARTBUFF_SPELLSTONE6         = GetItemInfo(41196); --"Grand Spellstone"
-  SMARTBUFF_FIRESTONE1          = GetItemInfo(41170); --"Lesser Firestone"
-  SMARTBUFF_FIRESTONE2          = GetItemInfo(41169); --"Firestone"
-  SMARTBUFF_FIRESTONE3          = GetItemInfo(41171); --"Greater Firestone"
-  SMARTBUFF_FIRESTONE4          = GetItemInfo(41172); --"Major Firestone"
-  SMARTBUFF_FIRESTONE5          = GetItemInfo(40773); --"Master Firestone"
-  SMARTBUFF_FIRESTONE6          = GetItemInfo(41173); --"Fel Firestone"
-  SMARTBUFF_FIRESTONE7          = GetItemInfo(41174); --"Grand Firestone"
-  
   -- Poisons
   SMARTBUFF_INSTANTPOISON1      = GetItemInfo(6947);  --"Instant Poison"
   SMARTBUFF_INSTANTPOISON2      = GetItemInfo(6949);  --"Instant Poison II"
@@ -203,27 +189,6 @@ function SMARTBUFF_InitItemList()
   SMARTBUFF_SOSTRENGHT7         = GetItemInfo(43465); --"Scroll of Strength VII"
   SMARTBUFF_SOSTRENGHT8         = GetItemInfo(43466); --"Scroll of Strength VIII"
   
-  
-  SMARTBUFF_FLASK1              = GetItemInfo(46377);  --"Flask of Endless Rage"
-  SMARTBUFF_FLASK2              = GetItemInfo(46376);  --"Flask of the Frost Wyrm"
-  SMARTBUFF_FLASK3              = GetItemInfo(46379);  --"Flask of Stoneblood"
-  SMARTBUFF_FLASK4              = GetItemInfo(46378);  --"Flask of Pure Mojo"
-  SMARTBUFF_FLASK5              = GetItemInfo(47499);  --"Flask of the North"
-  
-  SMARTBUFF_ELIXIR1             = GetItemInfo(39666);  --"Elixir of Mighty Agility"
-  SMARTBUFF_ELIXIR2             = GetItemInfo(44332);  --"Elixir of Mighty Thoughts"
-  SMARTBUFF_ELIXIR3             = GetItemInfo(40078);  --"Elixir of Mighty Fortitude"
-  SMARTBUFF_ELIXIR4             = GetItemInfo(40073);  --"Elixir of Mighty Strength"
-  SMARTBUFF_ELIXIR5             = GetItemInfo(40072);  --"Elixir of Spirit"
-  SMARTBUFF_ELIXIR6             = GetItemInfo(40097);  --"Elixir of Protection"
-  SMARTBUFF_ELIXIR7             = GetItemInfo(44328);  --"Elixir of Mighty Defense"
-  SMARTBUFF_ELIXIR8             = GetItemInfo(44331);  --"Elixir of Lightning Speed"
-  SMARTBUFF_ELIXIR9             = GetItemInfo(44329);  --"Elixir of Expertise"
-  SMARTBUFF_ELIXIR10            = GetItemInfo(44327);  --"Elixir of Deadly Strikes"
-  SMARTBUFF_ELIXIR11            = GetItemInfo(44330);  --"Elixir of Armor Piercing"
-  SMARTBUFF_ELIXIR12            = GetItemInfo(44325);  --"Elixir of Accuracy"
-  --SMARTBUFF_ELIXIR1             = GetItemInfo(39666);  --"Elixir"
-
   
   --SMARTBUFF_ = GetItemInfo(xxx); --""
   
@@ -442,26 +407,6 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_SBSPIRIT        = GetSpellInfo(8112);  --"Scroll buff: Spirit"
   SMARTBUFF_SBSTRENGHT      = GetSpellInfo(8118);  --"Scroll buff: Strength"
   
-  -- Flasks & Elixirs
-  SMARTBUFF_BFLASK1         = GetSpellInfo(53760);  --"Flask of Endless Rage"
-  SMARTBUFF_BFLASK2         = GetSpellInfo(53755);  --"Flask of the Frost Wyrm"
-  SMARTBUFF_BFLASK3         = GetSpellInfo(53758);  --"Flask of Stoneblood"
-  SMARTBUFF_BFLASK4         = GetSpellInfo(54212);  --"Flask of Pure Mojo"
-  SMARTBUFF_BFLASK5         = GetSpellInfo(67019);  --"Flask of the North"
-  
-  SMARTBUFF_BELIXIR1        = GetSpellInfo(28497);  --"Mighty Agility"
-  SMARTBUFF_BELIXIR2        = GetSpellInfo(60347);  --"Mighty Thoughts"
-  SMARTBUFF_BELIXIR3        = GetSpellInfo(53751);  --"Elixir of Mighty Fortitude"
-  SMARTBUFF_BELIXIR4        = GetSpellInfo(53748);  --"Mighty Strength"
-  SMARTBUFF_BELIXIR5        = GetSpellInfo(53747);  --"Elixir of Spirit"
-  SMARTBUFF_BELIXIR6        = GetSpellInfo(53763);  --"Protection"
-  SMARTBUFF_BELIXIR7        = GetSpellInfo(60343);  --"Mighty Defense"
-  SMARTBUFF_BELIXIR8        = GetSpellInfo(60346);  --"Lightning Speed"
-  SMARTBUFF_BELIXIR9        = GetSpellInfo(60344);  --"Expertise"
-  SMARTBUFF_BELIXIR10       = GetSpellInfo(60341);  --"Deadly Strikes"
-  SMARTBUFF_BELIXIR11       = GetSpellInfo(60345);  --"Armor Piercing"
-  SMARTBUFF_BELIXIR12       = GetSpellInfo(60340);  --"Accuracy"  
-  
   --if (SMARTBUFF_GOTW) then
   --  SMARTBUFF_AddMsgD(SMARTBUFF_GOTW.." found");
   --end  
@@ -530,19 +475,6 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_SHADOWWARD, 0.5, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_DARKPACT, 0.5, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_LIFETAP, 0.025, SMARTBUFF_CONST_SELF},
-      {SMARTBUFF_SPELLSTONE6, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE5, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE4, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE3, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE2, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE1, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE7, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE6, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE5, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE4, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE3, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE2, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE1, 60, SMARTBUFF_CONST_INV},
 	  {SMARTBUFF_TRUESHOTAURA, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_RAPIDFIRE, 0.2, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_AOTDH, -1, SMARTBUFF_CONST_SELF},
@@ -714,19 +646,6 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_SHADOWWARD, 0.5, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_DARKPACT, 0.5, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_LIFETAP, 0.025, SMARTBUFF_CONST_SELF},
-      {SMARTBUFF_SPELLSTONE6, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE5, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE4, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE3, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE2, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_SPELLSTONE1, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE7, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE6, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE5, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE4, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE3, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE2, 60, SMARTBUFF_CONST_INV},
-      {SMARTBUFF_FIRESTONE1, 60, SMARTBUFF_CONST_INV}
     };
     SMARTBUFF_PATTERNS = SMARTBUFF_WARLOCK_PATTERN;
   end
@@ -1035,27 +954,6 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_SOSTRENGHT2, 30, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_SBSTRENGHT},
     {SMARTBUFF_SOSTRENGHT1, 30, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_SBSTRENGHT}
   };
-  
-  -- Potions
-  SMARTBUFF_POTION = {
-    {SMARTBUFF_FLASK1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASK1},
-    {SMARTBUFF_FLASK2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASK2},
-    {SMARTBUFF_FLASK3, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASK3},
-    {SMARTBUFF_FLASK4, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASK4},
-    {SMARTBUFF_FLASK5, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASK5},
-    {SMARTBUFF_ELIXIR1,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR1},
-    {SMARTBUFF_ELIXIR2,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR2},
-    {SMARTBUFF_ELIXIR3,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR3},
-    {SMARTBUFF_ELIXIR4,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR4},
-    {SMARTBUFF_ELIXIR5,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR5},
-    {SMARTBUFF_ELIXIR6,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR6},
-    {SMARTBUFF_ELIXIR7,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR7},
-    {SMARTBUFF_ELIXIR8,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR8},
-    {SMARTBUFF_ELIXIR9,  60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR9},
-    {SMARTBUFF_ELIXIR10, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR10},
-    {SMARTBUFF_ELIXIR11, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR11},
-    {SMARTBUFF_ELIXIR12, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIR12}
-  }
   
   SMARTBUFF_AddMsgD("Spell list initialized");
 end

@@ -9,6 +9,7 @@
   <Script file="localization.tw.lua"/>
   <Script file="localization.cn.lua"/>
   <Script file="SmartBuff.buffs.lua"/>
+  <Script file="SmartBuff.items.lua"/>
 	<Script file="SmartBuff.lua"/>
   
   <Frame name="SmartBuffFrame">
@@ -17,7 +18,7 @@
 			  SMARTBUFF_OnLoad(self);
       </OnLoad>
 			<OnEvent>
-        SMARTBUFF_OnEvent(self, event, arg1, arg2, arg3, arg4, arg5);
+        SMARTBUFF_OnEvent(self, event, ...);
       </OnEvent>
       <OnUpdate>
         SMARTBUFF_OnUpdate(self, elapsed);
@@ -1687,7 +1688,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="OVERLAY">
-						<FontString inherits="GameFontHighlightSmall" text="SMARTBUFF_OFT_BUFFS">
+						<FontString name="$parentHeading" inherits="GameFontHighlightSmall" text="SMARTBUFF_OFT_BUFFS">
 							<Anchors>
 								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" relativeTo="$parent">
 									<Offset>
@@ -1703,7 +1704,7 @@
  						SMARTBUFF_OToggleBuff("S", 1);						
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(1);
     				end
     			</OnMouseUp>          
@@ -1782,7 +1783,7 @@
  						SMARTBUFF_OToggleBuff("S", 2);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(2);
     				end
     			</OnMouseUp>           
@@ -1829,7 +1830,7 @@
 						SMARTBUFF_OToggleBuff("S", 3);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(3);
     				end
     			</OnMouseUp>           
@@ -1876,7 +1877,7 @@
 						SMARTBUFF_OToggleBuff("S", 4);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(4);
     				end
     			</OnMouseUp>           
@@ -1923,7 +1924,7 @@
 						SMARTBUFF_OToggleBuff("S", 5);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(5);
     				end
     			</OnMouseUp>           
@@ -1970,7 +1971,7 @@
 						SMARTBUFF_OToggleBuff("S", 6);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(6);
     				end
     			</OnMouseUp>           
@@ -2017,7 +2018,7 @@
 						SMARTBUFF_OToggleBuff("S", 7);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(7);
     				end
     			</OnMouseUp>           
@@ -2064,7 +2065,7 @@
 						SMARTBUFF_OToggleBuff("S", 8);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(8);
     				end
     			</OnMouseUp>           
@@ -2111,7 +2112,7 @@
 						SMARTBUFF_OToggleBuff("S", 9);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(9);
     				end
     			</OnMouseUp>           
@@ -2158,7 +2159,7 @@
 						SMARTBUFF_OToggleBuff("S", 10);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(10);
     				end
     			</OnMouseUp>           
@@ -2205,7 +2206,7 @@
 						SMARTBUFF_OToggleBuff("S", 11);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(11);
     				end
     			</OnMouseUp>           
@@ -2252,7 +2253,7 @@
 						SMARTBUFF_OToggleBuff("S", 12);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(12);
     				end
     			</OnMouseUp>           
@@ -2299,7 +2300,7 @@
 						SMARTBUFF_OToggleBuff("S", 13);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(13);
     				end
     			</OnMouseUp>           
@@ -2346,7 +2347,7 @@
 						SMARTBUFF_OToggleBuff("S", 14);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(14);
     				end
     			</OnMouseUp>           
@@ -2393,7 +2394,7 @@
 						SMARTBUFF_OToggleBuff("S", 15);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(15);
     				end
     			</OnMouseUp>           
@@ -2440,7 +2441,7 @@
 						SMARTBUFF_OToggleBuff("S", 16);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(16);
     				end
     			</OnMouseUp>           
@@ -2487,7 +2488,7 @@
 						SMARTBUFF_OToggleBuff("S", 17);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(17);
     				end
     			</OnMouseUp>           
@@ -2534,7 +2535,7 @@
 						SMARTBUFF_OToggleBuff("S", 18);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(18);
     				end
     			</OnMouseUp>           
@@ -2581,7 +2582,7 @@
 						SMARTBUFF_OToggleBuff("S", 19);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(19);
     				end
     			</OnMouseUp>           
@@ -2628,7 +2629,7 @@
 						SMARTBUFF_OToggleBuff("S", 20);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(20);
     				end
     			</OnMouseUp>           
@@ -2675,7 +2676,7 @@
 						SMARTBUFF_OToggleBuff("S", 21);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(21);
     				end
     			</OnMouseUp>           
@@ -2722,7 +2723,7 @@
 						SMARTBUFF_OToggleBuff("S", 22);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(22);
     				end
     			</OnMouseUp>           
@@ -2769,7 +2770,7 @@
 						SMARTBUFF_OToggleBuff("S", 23);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(23);
     				end
     			</OnMouseUp>           
@@ -2816,7 +2817,7 @@
 						SMARTBUFF_OToggleBuff("S", 24);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(24);
     				end
     			</OnMouseUp>           
@@ -2863,7 +2864,7 @@
 						SMARTBUFF_OToggleBuff("S", 25);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(25);
     				end
     			</OnMouseUp>           
@@ -2910,7 +2911,7 @@
 						SMARTBUFF_OToggleBuff("S", 26);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(26);
     				end
     			</OnMouseUp>           
@@ -2957,7 +2958,7 @@
 						SMARTBUFF_OToggleBuff("S", 27);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(27);
     				end
     			</OnMouseUp>           
@@ -3004,7 +3005,7 @@
 						SMARTBUFF_OToggleBuff("S", 28);
 					</OnClick>
     			<OnMouseUp>
-    				if (arg1 == "RightButton") then
+					if (button == "RightButton") then
     					SmartBuff_BuffSetup_Show(28);
     				end
     			</OnMouseUp>           
